@@ -1,7 +1,7 @@
 'use strict';
 
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://regional-intelligence-backend.onrender.com';
 // ── DOM ──────────────────────────────────────────────────────────
 const locationInput  = document.getElementById('location-input');
 const searchBtn      = document.getElementById('search-btn');
