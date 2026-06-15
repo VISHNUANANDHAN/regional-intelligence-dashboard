@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regional Intelligence Dashboard</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="stylenew.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="header-brand">
+        <div class="brand-mark">
+          <i class="fa-solid fa-globe"></i>
+        </div>
+        <div>
+          <h1 class="brand-title">Regional Intelligence Dashboard</h1>
+          <p class="brand-subtitle">AI-Powered Regional Disruption Monitoring Platform</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- SEARCH SECTION -->
+    <section class="search-section">
+      <div class="container search-container">
+        <p class="search-label">Enter a location to begin your analysis</p>
+        <div class="search-row">
+          <div class="input-wrap">
+            <i class="fa-solid fa-magnifying-glass input-prefix-icon"></i>
+            <input
+              type="text"
+              id="location-input"
+              class="search-input"
+              placeholder="City, region, or country — e.g. Chennai, India"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+          <button class="btn-analyze" id="search-btn">
+            <i class="fa-solid fa-chart-line"></i>
+            Analyze
+          </button>
+        </div>
+        <p class="input-error" id="input-error" hidden>
+          <i class="fa-solid fa-circle-exclamation"></i>
+          Please enter a location to start the analysis.
+        </p>
+      </div>
+    </section>
+
+    <!-- OUTPUT REGION -->
+    <div class="output-region container" id="output-region">
+
+      <!-- ── LOADING ── -->
+      <div class="panel loading-panel" id="loading-panel" hidden>
+        <div class="loading-inner">
+          <div class="spinner-wrap">
+            <svg class="spinner-svg" viewBox="0 0 50 50" aria-hidden="true">
+              <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke-width="3"/>
+              <circle class="spinner-arc"   cx="25" cy="25" r="20" fill="none" stroke-width="3"
+                      stroke-dasharray="90 216" stroke-linecap="round"/>
+            </svg>
+            <i class="fa-solid fa-globe spinner-globe"></i>
+          </div>
+          <p class="loading-title">Analyzing regional intelligence</p>
+          <p class="loading-body">Please wait while data is being processed across news and weather channels.</p>
+          <ul class="loading-steps" id="loading-steps">
+            <li class="lstep" data-index="0"><i class="fa-regular fa-circle-dot"></i> Fetching weather data</li>
+            <li class="lstep" data-index="1"><i class="fa-regular fa-circle-dot"></i> Scanning news feeds</li>
+            <li class="lstep" data-index="2"><i class="fa-regular fa-circle-dot"></i> Classifying disruptions</li>
+            <li class="lstep" data-index="3"><i class="fa-regular fa-circle-dot"></i> Compiling report</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ── SUMMARY ── -->
+      <section class="summary-section" id="summary-section" hidden>
+        <div class="section-eyebrow">
+          <span class="eyebrow-label">
+            <i class="fa-solid fa-map-pin"></i>
+            <span id="result-location">—</span>
+          </span>
+          <span class="eyebrow-divider"></span>
+          <span class="eyebrow-sub">Situational Overview</span>
+        </div>
+
+        <div class="summary-grid">
+
+          <!-- Weather Card -->
+          <div class="card weather-card">
+            <div class="card-header">
+              <span class="card-label">Current Conditions</span>
+            </div>
+            <div class="weather-body">
+              <div class="weather-icon-circle" id="weather-icon-circle">
+                <i id="weather-icon" class="fa-solid fa-cloud"></i>
+              </div>
+              <div class="weather-details">
+                <div class="weather-temp" id="weather-temp">—</div>
+                <div class="weather-condition" id="weather-condition">—</div>
+                <div class="weather-desc" id="weather-desc">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Card -->
+          <div class="card status-card" id="status-card">
+            <div class="card-header">
+              <span class="card-label">Threat Assessment</span>
+            </div>
+            <div class="status-body">
+              <div class="status-icon-wrap" id="status-icon-wrap">
+                <i class="fa-solid fa-shield-check" id="status-icon"></i>
+              </div>
+              <div class="status-details">
+                <div class="status-headline" id="status-headline">Assessing…</div>
+                <div class="status-sub" id="status-sub">Processing intelligence data</div>
+                <div class="status-count-row">
+                  <span class="count-badge" id="count-badge">0</span>
+                  <span class="count-label">events identified</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── EVENTS ── -->
+      <section class="events-section" id="events-section" hidden>
+        <div class="section-eyebrow">
+          <span class="eyebrow-label">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Detected Events
+          </span>
+          <span class="events-tally" id="events-tally">0 events</span>
+        </div>
+        <div class="events-list" id="events-list"></div>
+      </section>
+
+      <!-- ── EMPTY STATE ── -->
+      <section class="empty-section" id="empty-section" hidden>
+        <div class="empty-card">
+          <div class="empty-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h2 class="empty-title">No Significant Disruptions Detected</h2>
+          <p class="empty-body">
+            The analysis is complete. No major disruptions affecting <strong id="empty-location">the selected location</strong>
+            have been identified across monitored news and weather data channels.
+            Conditions appear to be normal at this time.
+          </p>
+          <div class="empty-checks">
+            <span class="check-item"><i class="fa-solid fa-check"></i> News feeds reviewed</span>
+            <span class="check-item"><i class="fa-solid fa-check"></i> Weather alerts clear</span>
+            <span class="check-item"><i class="fa-solid fa-check"></i> No service disruptions</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ERROR STATE ── -->
+      <section class="error-section" id="error-section" hidden>
+        <div class="error-card">
+          <div class="error-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="error-text-block">
+            <h2 class="error-title">Unable to Complete Analysis</h2>
+            <p class="error-body" id="error-body">
+              The analysis could not be completed at this time. Please verify the location and try again.
+            </p>
+            <button class="btn-retry" id="retry-btn">
+              <i class="fa-solid fa-rotate-right"></i> Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /output-region -->
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Regional Intelligence Dashboard</span>
+      <span>Powered by AI disruption analysis &mdash; data refreshed on demand</span>
+    </div>
+  </footer>
+
+  <script src="javascript.js"></script>
+</body>
+</html>
