@@ -1,5 +1,31 @@
-'use strict';
+// Authentication guard
+(function () {
+  const token = localStorage.getItem("access_token");
 
+  if (!token) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  // Verify that the saved token is still valid.
+  fetch(`${API_BASE}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        window.location.replace("login.html");
+      }
+    })
+    .catch(() => {
+      console.error("Unable to verify the login session.");
+    });
+})();
+
+'use strict';
 
 const API_BASE = 'https://regional-intelligence-backend.onrender.com';
 // ── DOM ──────────────────────────────────────────────────────────
