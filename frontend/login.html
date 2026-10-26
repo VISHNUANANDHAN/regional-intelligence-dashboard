@@ -1,0 +1,657 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regional Intelligence | Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylenew.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f4f7fb;
+      font-family: Inter, sans-serif;
+      padding: 24px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      padding: 36px;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px #1b3a6b18;
+    }
+    .auth-brand { text-align: center; margin-bottom: 28px; }
+    .auth-brand i { font-size: 34px; color: #1b3a6b; }
+    .auth-brand h1 {
+      font-family: "DM Serif Display", serif;
+      color: #1b3a6b;
+      font-size: 27px;
+      margin: 12px 0 6px;
+    }
+    .auth-brand p { color: #68758a; font-size: 13px; }
+    .auth-card h2 { font-size: 21px; margin-bottom: 22px; }
+    .auth-card label {
+      display: block; font-size: 13px; font-weight: 600;
+      margin: 16px 0 7px;
+    }
+    .auth-card input {
+      box-sizing: border-box; width: 100%; padding: 12px;
+      border: 1px solid #d8deea; border-radius: 8px;
+      font: inherit; outline-color: #1b3a6b;
+    }
+    .auth-card button {
+      width: 100%; margin-top: 22px; padding: 13px;
+      border: 0; border-radius: 8px; background: #1b3a6b;
+      color: white; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    .auth-card button:disabled { opacity: .6; cursor: wait; }
+    .auth-switch { text-align: center; font-size: 13px; margin-top: 20px; }
+    .auth-switch a { color: #1b3a6b; font-weight: 600; cursor: pointer; }
+    #message { font-size: 13px; margin-top: 14px; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <section class="auth-card">
+    <div class="auth-brand">
+      <i class="fa-solid fa-globe"></i>
+      <h1>Regional Intelligence</h1>
+      <p>AI-Powered Regional Disruption Monitoring</p>
+    </div>
+
+    <h2 id="form-title">Welcome back</h2>
+
+    <form id="auth-form">
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" minlength="8"
+             autocomplete="current-password" required>
+
+      <button id="submit-btn" type="submit">Login</button>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <p class="auth-switch">
+      <span id="switch-text">Don't have an account?</span>
+      <a href="#" id="switch-mode">Register</a>
+    </p>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <script>
+    const API = "http://127.0.0.1:8000";
+    let isRegister = false;
+
+    const form = document.getElementById("auth-form");
+    const title = document.getElementById("form-title");
+    const button = document.getElementById("submit-btn");
+    const message = document.getElementById("message");
+    const password = document.getElementById("password");
+    const switchText = document.getElementById("switch-text");
+    const switchMode = document.getElementById("switch-mode");
+
+    switchMode.addEventListener("click", (event) => {
+      event.preventDefault();
+      isRegister = !isRegister;
+
+      title.textContent = isRegister ? "Create your account" : "Welcome back";
+      button.textContent = isRegister ? "Register" : "Login";
+      switchText.textContent = isRegister
+        ? "Already have an account?"
+        : "Don't have an account?";
+      switchMode.textContent = isRegister ? "Login" : "Register";
+      password.autocomplete = isRegister ? "new-password" : "current-password";
+      message.textContent = "";
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      message.textContent = "Please wait...";
+      message.style.color = "#68758a";
+
+      const email = document.getElementById("email").value.trim();
+      const pass = password.value;
+
+      try {
+        let response;
+
+        if (isRegister) {
+          response = await fetch(`${API}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password: pass })
+          });
+        } else {
+          const data = new URLSearchParams();
+          data.set("username", email);
+          data.set("password", pass);
+
+          response = await fetch(`${API}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: data
+          });
+        }
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.detail || result.message || "Request failed.");
+        }
+
+        if (isRegister) {
+          message.style.color = "green";
+          message.textContent = "Registration successful. You can now log in.";
+          isRegister = false;
+          title.textContent = "Welcome back";
+          button.textContent = "Login";
+          switchText.textContent = "Don't have an account?";
+          switchMode.textContent = "Register";
+          password.value = "";
+          password.autocomplete = "current-password";
+        } else {
+          localStorage.setItem("access_token", result.access_token);
+          localStorage.setItem("user", JSON.stringify(result.user));
+          window.location.replace("index.html");
+        }
+      } catch (error) {
+        message.style.color = "#c62828";
+        message.textContent =
+          error.message.includes("Failed to fetch")
+            ? "Cannot connect to the backend. Check that FastAPI is running."
+            : error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+``` -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regional Intelligence - Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f3f6fb;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #111827;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 538px;
+            background: white;
+            padding: 44px;
+            border-radius: 22px;
+            box-shadow: 0 15px 45px rgba(30, 58, 95, 0.08);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 42px;
+        }
+
+        .brand-icon {
+            font-size: 25px;
+            margin-bottom: 25px;
+        }
+
+        .brand h1 {
+            color: #1e4075;
+            font-family: Georgia, serif;
+            font-size: 32px;
+            margin: 0 0 18px;
+        }
+
+        .brand p {
+            color: #64748b;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin: 0 0 36px;
+        }
+
+        .field {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        input {
+            width: 100%;
+            height: 64px;
+            padding: 14px;
+            border: 1px solid #cfdaea;
+            border-radius: 11px;
+            font-size: 17px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #1e4075;
+            box-shadow: 0 0 0 3px rgba(30, 64, 117, 0.1);
+        }
+
+        button {
+            width: 100%;
+            height: 64px;
+            border: none;
+            border-radius: 11px;
+            background: #1e4075;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        button:hover {
+            background: #17345f;
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .error {
+            color: #b91c1c;
+        }
+
+        .switch {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 16px;
+        }
+
+        .switch a {
+            color: #1e4075;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 560px) {
+            .container {
+                padding: 28px 22px;
+            }
+
+            .brand h1 {
+                font-size: 27px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header class="brand">
+            <div class="brand-icon">🌐</div>
+            <h1>Regional Intelligence</h1>
+            <p>AI-Powered Regional Disruption Monitoring</p>
+        </header>
+
+        <!-- LOGIN FORM -->
+        <section id="login-section">
+            <h2>Welcome back</h2>
+
+            <form id="login-form" novalidate>
+                <div class="field">
+                    <label for="login-email">Email address</label>
+                    <input
+                        type="email"
+                        id="login-email"
+                        name="email"
+                        placeholder="Enter your email address"
+                        autocomplete="email"
+                        maxlength="254"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <input
+                        type="password"
+                        id="login-password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" id="login-button">Login</button>
+                <div id="login-message" class="message" role="status" aria-live="polite"></div>
+            </form>
+
+            <div class="switch">
+                Don't have an account?
+                <a href="#" id="show-register">Register</a>
+            </div>
+        </section>
+
+        <!-- REGISTRATION FORM -->
+        <section id="register-section" class="hidden">
+            <h2>Create account</h2>
+
+            <form id="register-form" novalidate>
+                <div class="field">
+                    <label for="register-email">Email address</label>
+                    <input
+                        type="email"
+                        id="register-email"
+                        name="email"
+                        placeholder="Enter your email address"
+                        autocomplete="email"
+                        maxlength="254"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="register-password">Password</label>
+                    <input
+                        type="password"
+                        id="register-password"
+                        name="password"
+                        placeholder="Create a password"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="confirm-password">Confirm password</label>
+                    <input
+                        type="password"
+                        id="confirm-password"
+                        name="confirm-password"
+                        placeholder="Re-enter your password"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" id="register-button">Register</button>
+                <div id="register-message" class="message" role="status" aria-live="polite"></div>
+            </form>
+
+            <div class="switch">
+                Already have an account?
+                <a href="#" id="show-login">Login</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Local development backend.
+        // For deployment, replace this with your deployed Render backend URL.
+        //const API = "http://127.0.0.1:8000";
+        const API = "https://regional-intelligence-backend.onrender.com";
+
+        const loginSection = document.getElementById("login-section");
+        const registerSection = document.getElementById("register-section");
+
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = "message " + type;
+        }
+
+        function clearMessages() {
+            document.querySelectorAll(".message").forEach(element => {
+                element.textContent = "";
+                element.className = "message";
+            });
+        }
+
+        function showLogin() {
+            clearMessages();
+            registerSection.classList.add("hidden");
+            loginSection.classList.remove("hidden");
+        }
+
+        function showRegister() {
+            clearMessages();
+            loginSection.classList.add("hidden");
+            registerSection.classList.remove("hidden");
+        }
+
+        document.getElementById("show-register").addEventListener("click", event => {
+            event.preventDefault();
+            showRegister();
+        });
+
+        document.getElementById("show-login").addEventListener("click", event => {
+            event.preventDefault();
+            showLogin();
+        });
+
+        // Checks the email structure and requires a domain extension.
+        function isValidEmail(email) {
+            const value = email.trim();
+
+            if (value.length > 254) {
+                return false;
+            }
+
+            const pattern =
+                /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,62}[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+
+            return pattern.test(value);
+        }
+
+        function validateEmail(input, messageElement) {
+            const email = input.value.trim();
+
+            if (!email) {
+                showMessage(messageElement, "Please enter your email address.", "error");
+                input.focus();
+                return false;
+            }
+
+            if (!isValidEmail(email)) {
+                showMessage(
+                    messageElement,
+                    "Please enter a valid email, such as name@gmail.com.",
+                    "error"
+                );
+                input.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // LOGIN
+        document.getElementById("login-form").addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const emailInput = document.getElementById("login-email");
+            const passwordInput = document.getElementById("login-password");
+            const message = document.getElementById("login-message");
+            const button = document.getElementById("login-button");
+
+            if (!validateEmail(emailInput, message)) return;
+
+            if (!passwordInput.value) {
+                showMessage(message, "Please enter your password.", "error");
+                passwordInput.focus();
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Logging in...";
+            showMessage(message, "Connecting to server...", "");
+
+            try {
+                const body = new URLSearchParams();
+                body.append("username", emailInput.value.trim());
+                body.append("password", passwordInput.value);
+
+                const response = await fetch(`${API}/auth/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: body.toString()
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || "Login failed. Check your credentials.");
+                }
+
+                if (!data.access_token) {
+                    throw new Error("The server did not return an access token.");
+                }
+
+                localStorage.setItem("access_token", data.access_token);
+
+                if (data.user) {
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                }
+
+                showMessage(message, "Login successful. Redirecting...", "success");
+
+                window.location.href = "index.html";
+
+            } catch (error) {
+                showMessage(
+                    message,
+                    error.message || "Unable to connect to the server.",
+                    "error"
+                );
+            } finally {
+                button.disabled = false;
+                button.textContent = "Login";
+            }
+        });
+
+        // REGISTRATION
+        document.getElementById("register-form").addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const emailInput = document.getElementById("register-email");
+            const passwordInput = document.getElementById("register-password");
+            const confirmInput = document.getElementById("confirm-password");
+            const message = document.getElementById("register-message");
+            const button = document.getElementById("register-button");
+
+            if (!validateEmail(emailInput, message)) return;
+
+            if (passwordInput.value.length < 8) {
+                showMessage(message, "Password must contain at least 8 characters.", "error");
+                passwordInput.focus();
+                return;
+            }
+
+            if (passwordInput.value !== confirmInput.value) {
+                showMessage(message, "Passwords do not match.", "error");
+                confirmInput.focus();
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Registering...";
+            showMessage(message, "Creating your account...", "");
+
+            try {
+                const response = await fetch(`${API}/auth/register`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail || data.message || "Registration failed."
+                    );
+                }
+
+                showMessage(
+                    message,
+                    "Registration successful. You can now log in.",
+                    "success"
+                );
+
+                document.getElementById("login-email").value = emailInput.value.trim();
+                passwordInput.value = "";
+                confirmInput.value = "";
+
+                setTimeout(showLogin, 1200);
+
+            } catch (error) {
+                showMessage(
+                    message,
+                    error.message || "Unable to connect to the server.",
+                    "error"
+                );
+            } finally {
+                button.disabled = false;
+                button.textContent = "Register";
+            }
+        });
+    </script>
+</body>
+</html>
+```
