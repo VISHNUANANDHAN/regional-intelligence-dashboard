@@ -7,7 +7,10 @@ from services.report_service import generate_report
 import time
 from datetime import datetime
 
+from auth import router as auth_router
+
 app = FastAPI()
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
