@@ -284,6 +284,17 @@ function present(data, location, isDemo) {
         return;
     }
 
+    currentReportData = {
+      location,
+      report: data
+    };
+
+if (saveReportBtn) {
+  saveReportBtn.hidden = isDemo || !localStorage.getItem("access_token");
+  saveReportBtn.textContent = "☆ Save Report";
+  saveReportBtn.disabled = false;
+}
+
     const events = data.detected_events || [];
 
     renderWeather(data.weather);
@@ -318,6 +329,47 @@ retryBtn.addEventListener('click', () => {
     analyze();
   }
 });
+
+if (saveReportBtn) {
+  saveReportBtn.addEventListener("click", async () => {
+    if (!currentReportData) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    saveReportBtn.disabled = true;
+
+    try {
+      const response = await fetch(`${API_BASE}/saved-reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          location: currentReportData.location,
+          title: `Regional report — ${currentReportData.location}`,
+          report_data: currentReportData.report
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || "Unable to save report.");
+      }
+
+      saveReportBtn.textContent = "✓ Report Saved";
+      alert("Report saved to your Saved Reports!");
+    } catch (error) {
+      alert(error.message || "Unable to save report.");
+      saveReportBtn.disabled = false;
+    }
+  });
+}
 
 // Focus input on load
 locationInput.focus();async function analyze() {
