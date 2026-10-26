@@ -8,11 +8,12 @@ import time
 from database import Base, engine
 import models
 from datetime import datetime
-
+from saved_reports import router as saved_reports_router
 from auth import router as auth_router
 
 app = FastAPI()
 app.include_router(auth_router)
+app.include_router(saved_reports_router)
 Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
