@@ -1,4 +1,6 @@
+
 // Authentication guard
+const API_BASE = 'https://regional-intelligence-backend.onrender.com';
 (function () {
   const token = localStorage.getItem("access_token");
 
@@ -27,7 +29,7 @@
 
 'use strict';
 
-const API_BASE = 'https://regional-intelligence-backend.onrender.com';
+
 // ── DOM ──────────────────────────────────────────────────────────
 const locationInput  = document.getElementById('location-input');
 const searchBtn      = document.getElementById('search-btn');
