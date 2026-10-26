@@ -59,6 +59,8 @@ const emptyLocation  = document.getElementById('empty-location');
 const errorBody      = document.getElementById('error-body');
 const retryBtn       = document.getElementById('retry-btn');
 const loadingStepsEls = document.querySelectorAll('.lstep');
+const saveReportBtn = document.getElementById("save-report-btn");
+let currentReportData = null;
 
 let lastQuery = '';
 let stepTimer = null;
