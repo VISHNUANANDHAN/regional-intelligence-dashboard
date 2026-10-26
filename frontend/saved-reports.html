@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Reports | Regional Intelligence</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 950px;
+      margin: 40px auto;
+      padding: 0 18px;
+      color: #172033;
+      background: #f5f7fb;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .report {
+      background: white;
+      border: 1px solid #dce2eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    button, .back {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 7px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .back, .view { background: #e5edff; color: #173c8f; }
+    .delete { background: #ffe5e5; color: #a21b1b; margin-left: 8px; }
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #f5f7fa;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .muted { color: #667085; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>Saved Reports</h1>
+      <p class="muted">Your saved regional intelligence reports expire after 24 hours.</p>
+    </div>
+    <a class="back" href="index.html">← Back to Dashboard</a>
+  </div>
+
+  <p id="status">Loading your reports...</p>
+  <div id="reports"></div>
+
+  <script>
+    const API_BASE = "https://regional-intelligence-backend.onrender.com";
+    const token = localStorage.getItem("access_token");
+    const reportsContainer = document.getElementById("reports");
+    const statusMessage = document.getElementById("status");
+
+    if (!token) {
+      window.location.href = "login.html";
+    } else {
+      loadReports();
+    }
+
+    async function loadReports() {
+      statusMessage.textContent = "Loading your reports...";
+      reportsContainer.replaceChildren();
+
+      try {
+        const response = await fetch(`${API_BASE}/saved-reports`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.status === 401) {
+          statusMessage.textContent = "Your session has expired. Please log in again.";
+          return;
+        }
+        if (!response.ok) throw new Error("Could not load reports.");
+
+        const reports = await response.json();
+
+        if (!reports.length) {
+          statusMessage.textContent = "You have no saved reports yet.";
+          return;
+        }
+
+        statusMessage.textContent = `${reports.length} saved report(s)`;
+
+        reports.forEach(report => {
+          const card = document.createElement("article");
+          card.className = "report";
+
+          const title = document.createElement("h2");
+          title.textContent = report.title || "Saved Report";
+
+          const location = document.createElement("p");
+          location.textContent = `Location: ${report.location}`;
+
+          const expiry = document.createElement("p");
+          expiry.className = "muted";
+          expiry.textContent = `Expires: ${new Date(report.expires_at).toLocaleString()}`;
+
+          const details = document.createElement("pre");
+          details.hidden = true;
+          details.textContent = JSON.stringify(report.report_data, null, 2);
+
+          const viewButton = document.createElement("button");
+          viewButton.className = "view";
+          viewButton.textContent = "View Report";
+          viewButton.addEventListener("click", () => {
+            details.hidden = !details.hidden;
+            viewButton.textContent = details.hidden ? "View Report" : "Hide Report";
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.className = "delete";
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", async () => {
+            if (!confirm("Delete this saved report?")) return;
+
+            deleteButton.disabled = true;
+            try {
+              const result = await fetch(
+                `${API_BASE}/saved-reports/${report.id}`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              );
+
+              if (!result.ok) throw new Error("Could not delete report.");
+              card.remove();
+
+              const remaining = reportsContainer.querySelectorAll(".report").length;
+              statusMessage.textContent = remaining
+                ? `${remaining} saved report(s)`
+                : "You have no saved reports yet.";
+            } catch (error) {
+              alert(error.message);
+              deleteButton.disabled = false;
+            }
+          });
+
+          card.append(title, location, expiry, viewButton, deleteButton, details);
+          reportsContainer.appendChild(card);
+        });
+      } catch (error) {
+        statusMessage.textContent = error.message || "Unable to load reports.";
+      }
+    }
+  </script>
+</body>
+</html>
