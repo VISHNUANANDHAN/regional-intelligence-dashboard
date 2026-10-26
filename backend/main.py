@@ -11,6 +11,10 @@ from datetime import datetime
 from saved_reports import router as saved_reports_router
 from auth import router as auth_router
 
+
+from incident_monitor import get_incident_status
+
+
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(saved_reports_router)
@@ -94,3 +98,25 @@ def report(location: str):
         f"{end_time - start_time:.2f} seconds"
     )
     print("=" * 50)
+
+
+@app.get("/incidents/live")
+def live_incidents():
+    """Return incidents fetched from public monitoring feeds."""
+    return get_incident_status()
+
+
+@app.get("/incidents/health")
+def incident_feed_health():
+    """Check whether public incident feeds are returning data."""
+    status = get_incident_status()
+
+    return {
+        "status": (
+            "ok" if status["incident_count"] > 0 else "no_data"
+        ),
+        "incident_count": status["incident_count"],
+        "updated_at": status["updated_at"],
+        "sources": status["sources"],
+        "notice": status["notice"],
+    }
