@@ -4,157 +4,622 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10233f">
   <title>Saved Reports | Regional Intelligence</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 950px;
-      margin: 40px auto;
-      padding: 0 18px;
-      color: #172033;
-      background: #f5f7fb;
+      margin: 0;
+      padding: 32px 18px 55px;
+      font-family: Inter, Arial, sans-serif;
+      color: #172d4a;
+      background: #f3f6fb;
     }
+
+    .page { max-width: 1050px; margin: auto; }
+
     .top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "DM Serif Display", Georgia, serif;
+      font-size: clamp(30px, 4vw, 40px);
+      font-weight: 400;
+      color: #15335a;
+    }
+
+    .muted { color: #667991; line-height: 1.6; }
+    .subtitle { margin: 0; font-size: 14px; }
+
+    button, .back {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 11px 14px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .15s ease;
+    }
+
+    button:disabled { opacity: .55; cursor: wait; }
+
+    .back, .view {
+      color: #204c87;
+      background: #e5edff;
+    }
+
+    .back:hover, .view:hover { background: #d7e4ff; }
+
+    .delete {
+      color: #a3222b;
+      background: #fff0f0;
+      border-color: #f5d3d5;
+    }
+
+    .delete:hover { background: #ffe1e2; }
+
+    .status {
+      margin: 20px 0;
+      font-size: 14px;
+      color: #526680;
+    }
+
+    .report {
+      background: #fff;
+      border: 1px solid #dfe7f0;
+      border-radius: 15px;
+      padding: 23px;
+      margin: 17px 0;
+      box-shadow: 0 5px 20px rgba(28, 52, 81, .045);
+    }
+
+    .report-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
       gap: 12px;
       flex-wrap: wrap;
     }
-    .report {
-      background: white;
-      border: 1px solid #dce2eb;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 16px 0;
+
+    .report h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
     }
-    button, .back {
-      padding: 10px 14px;
-      border: 0;
-      border-radius: 7px;
-      cursor: pointer;
-      text-decoration: none;
+
+    .location {
+      margin: 0 0 8px;
+      color: #4e6078;
+      font-size: 13px;
+    }
+
+    .expiry {
+      margin: 0 0 16px;
+      font-size: 12px;
+      color: #718198;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .report-content {
+      border-top: 1px solid #e7edf4;
+      padding-top: 18px;
+      margin-top: 4px;
+    }
+
+    .report-content[hidden] { display: none; }
+
+    .summary-box {
+      padding: 16px;
+      background: #f7f9fc;
+      border: 1px solid #e6edf5;
+      border-radius: 11px;
+      margin-bottom: 14px;
+    }
+
+    .summary-box h3 {
+      margin: 0 0 12px;
+      color: #203b60;
+      font-size: 15px;
+    }
+
+    .summary-text {
+      margin: 0;
+      color: #425570;
+      font-size: 13px;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .weather-item {
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #e4eaf2;
+      border-radius: 9px;
+      min-width: 0;
+    }
+
+    .weather-item span {
+      display: block;
+      font-size: 11px;
+      color: #75849a;
+      margin-bottom: 6px;
+    }
+
+    .weather-item strong {
+      display: block;
+      font-size: 14px;
+      color: #203b60;
+      overflow-wrap: anywhere;
+    }
+
+    .event-list { display: grid; gap: 10px; }
+
+    .event-card {
+      border: 1px solid #e4eaf2;
+      border-left: 4px solid #93a6be;
+      border-radius: 9px;
+      padding: 13px;
+      background: #fff;
+    }
+
+    .event-card h4 {
+      margin: 0 0 7px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .event-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #62738a;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .event-card.high { border-left-color: #d93442; }
+    .event-card.medium { border-left-color: #e5a02d; }
+    .event-card.low { border-left-color: #249968; }
+
+    .status-pill {
       display: inline-block;
+      padding: 5px 9px;
+      border-radius: 6px;
+      background: #e8f0ff;
+      color: #254e89;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 12px;
     }
-    .back, .view { background: #e5edff; color: #173c8f; }
-    .delete { background: #ffe5e5; color: #a21b1b; margin-left: 8px; }
-    pre {
+
+    .empty {
+      padding: 40px 20px;
+      text-align: center;
+      border: 1px dashed #cbd7e6;
+      border-radius: 13px;
+      background: #fff;
+    }
+
+    .empty i {
+      font-size: 30px;
+      color: #8ca2bd;
+      margin-bottom: 12px;
+    }
+
+    .empty h2 { margin: 0 0 8px; font-size: 19px; }
+    .empty p { margin: 0; font-size: 13px; color: #718198; }
+
+    .raw-toggle {
+      padding: 0;
+      border: 0;
+      color: #526b8d;
+      background: transparent;
+      font-size: 12px;
+      margin: 5px 0 12px;
+    }
+
+    .raw-json {
+      padding: 14px;
+      background: #f4f6fa;
+      border-radius: 9px;
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      background: #f5f7fa;
-      padding: 12px;
-      border-radius: 8px;
+      overflow-x: auto;
     }
-    .muted { color: #667085; }
+
+    @media (max-width: 600px) {
+      body { padding: 22px 13px 40px; }
+      .report { padding: 16px; }
+      .weather-grid { grid-template-columns: 1fr; }
+      .report-actions button { flex: 1; }
+    }
   </style>
 </head>
-<body>
-  <div class="top">
-    <div>
-      <h1>Saved Reports</h1>
-      <p class="muted">Your saved regional intelligence reports expire after 24 hours.</p>
-    </div>
-    <a class="back" href="index.html">← Back to Dashboard</a>
-  </div>
 
-  <p id="status">Loading your reports...</p>
-  <div id="reports"></div>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <h1>Saved Reports</h1>
+        <p class="muted subtitle">
+          Your saved regional intelligence reports expire after 24 hours.
+        </p>
+      </div>
+      <a class="back" href="index.html">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </header>
+
+    <p id="status" class="status" role="status">Loading your reports…</p>
+    <section id="reports" aria-live="polite"></section>
+  </main>
 
   <script>
+    "use strict";
+
     const API_BASE = "https://regional-intelligence-backend.onrender.com";
     const token = localStorage.getItem("access_token");
     const reportsContainer = document.getElementById("reports");
     const statusMessage = document.getElementById("status");
 
     if (!token) {
-      window.location.href = "login.html";
+      window.location.replace("login.html");
     } else {
       loadReports();
     }
 
+    function addText(parent, tag, className, value) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      element.textContent = value == null || value === "" ? "Not available" : String(value);
+      parent.appendChild(element);
+      return element;
+    }
+
+    function getValue(object, keys, fallback = "Not available") {
+      for (const key of keys) {
+        if (object && object[key] !== undefined && object[key] !== null && object[key] !== "") {
+          return object[key];
+        }
+      }
+      return fallback;
+    }
+
+    function formatDate(value) {
+      if (!value) return "Not available";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+    }
+
+    function makeSummary(reportData, locationName) {
+      const content = document.createElement("div");
+      content.className = "report-content";
+      content.hidden = true;
+
+      const summary = document.createElement("section");
+      summary.className = "summary-box";
+      addText(summary, "h3", "", "Situational Overview");
+
+      const location = getValue(reportData, ["location"], locationName);
+      addText(summary, "p", "summary-text", `Location: ${location}`);
+
+      const status = getValue(
+        reportData,
+        ["status", "headline", "threat_assessment"],
+        "No status summary was saved."
+      );
+      const pill = addText(summary, "span", "status-pill", status);
+      summary.insertBefore(pill, summary.lastChild);
+
+      const description = getValue(
+        reportData,
+        ["summary", "overview", "description"],
+        ""
+      );
+      if (description) addText(summary, "p", "summary-text", description);
+
+      content.appendChild(summary);
+
+      const weather = reportData.weather;
+      if (weather && typeof weather === "object") {
+        const weatherBox = document.createElement("section");
+        weatherBox.className = "summary-box";
+        addText(weatherBox, "h3", "", "Weather Conditions");
+
+        const grid = document.createElement("div");
+        grid.className = "weather-grid";
+
+        const weatherItems = [
+          ["Temperature", getValue(weather, ["temperature", "temp"], "Not available")],
+          ["Condition", getValue(weather, ["condition", "main"], "Not available")],
+          ["Description", getValue(weather, ["description", "details"], "Not available")]
+        ];
+
+        weatherItems.forEach(([label, value]) => {
+          const item = document.createElement("div");
+          item.className = "weather-item";
+          addText(item, "span", "", label);
+          addText(item, "strong", "", value);
+          grid.appendChild(item);
+        });
+
+        weatherBox.appendChild(grid);
+        content.appendChild(weatherBox);
+      }
+
+      const events = getValue(reportData, ["detected_events", "events", "incidents"], []);
+      const eventsBox = document.createElement("section");
+      eventsBox.className = "summary-box";
+      addText(eventsBox, "h3", "", `Detected Events (${Array.isArray(events) ? events.length : 0})`);
+
+      if (Array.isArray(events) && events.length) {
+        const eventList = document.createElement("div");
+        eventList.className = "event-list";
+
+        events.forEach(event => {
+          const card = document.createElement("article");
+          let severity = String(getValue(event, ["severity", "priority"], "")).toLowerCase();
+          if (severity.includes("high") || severity.includes("critical")) {
+            card.classList.add("event-card", "high");
+          } else if (severity.includes("medium") || severity.includes("moderate")) {
+            card.classList.add("event-card", "medium");
+          } else {
+            card.classList.add("event-card", "low");
+          }
+
+          addText(card, "h4", "", getValue(event, ["title", "name", "headline"], "Detected event"));
+          addText(card, "p", "", getValue(event, ["description", "summary", "details"], "No event description was saved."));
+
+          const meta = [
+            getValue(event, ["severity", "priority"], ""),
+            getValue(event, ["location", "region", "country"], ""),
+            getValue(event, ["date", "published_at", "timestamp"], "")
+          ].filter(value => value !== "");
+
+          if (meta.length) addText(card, "p", "", meta.join(" · "));
+
+          const sourceUrl = event.source_url || event.url;
+          if (sourceUrl) {
+            try {
+              const url = new URL(sourceUrl);
+              if (url.protocol === "https:" || url.protocol === "http:") {
+                const link = document.createElement("a");
+                link.href = url.href;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "Open source ↗";
+                link.className = "incident-source";
+                card.appendChild(link);
+              }
+            } catch (_) {
+              // Do not display malformed links.
+            }
+          }
+
+          eventList.appendChild(card);
+        });
+
+        eventsBox.appendChild(eventList);
+      } else {
+        addText(
+          eventsBox,
+          "p",
+          "summary-text",
+          "No detected events were recorded in this saved report."
+        );
+      }
+
+      content.appendChild(eventsBox);
+
+      // Keep raw data available for troubleshooting, but hidden by default.
+      const rawToggle = document.createElement("button");
+      rawToggle.type = "button";
+      rawToggle.className = "raw-toggle";
+      rawToggle.textContent = "View raw report data";
+      rawToggle.setAttribute("aria-expanded", "false");
+
+      const raw = document.createElement("pre");
+      raw.className = "raw-json";
+      raw.hidden = true;
+
+      try {
+        raw.textContent = JSON.stringify(reportData, null, 2);
+      } catch (_) {
+        raw.textContent = "Unable to display raw report data.";
+      }
+
+      rawToggle.addEventListener("click", () => {
+        raw.hidden = !raw.hidden;
+        rawToggle.textContent = raw.hidden ? "View raw report data" : "Hide raw report data";
+        rawToggle.setAttribute("aria-expanded", String(!raw.hidden));
+      });
+
+      content.append(rawToggle, raw);
+      return content;
+    }
+
     async function loadReports() {
-      statusMessage.textContent = "Loading your reports...";
+      statusMessage.textContent = "Loading your reports…";
       reportsContainer.replaceChildren();
 
       try {
         const response = await fetch(`${API_BASE}/saved-reports`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          },
+          cache: "no-store"
         });
 
         if (response.status === 401) {
-          statusMessage.textContent = "Your session has expired. Please log in again.";
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user");
+          statusMessage.textContent = "Your session has expired. Redirecting to login…";
+          window.setTimeout(() => window.location.replace("login.html"), 700);
           return;
         }
-        if (!response.ok) throw new Error("Could not load reports.");
+
+        if (!response.ok) throw new Error(`Could not load reports (HTTP ${response.status}).`);
 
         const reports = await response.json();
 
+        if (!Array.isArray(reports)) {
+          throw new Error("Unexpected response from the saved reports API.");
+        }
+
         if (!reports.length) {
           statusMessage.textContent = "You have no saved reports yet.";
+
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          addText(empty, "div", "", "📂");
+          addText(empty, "h2", "", "No saved reports yet");
+          addText(empty, "p", "", "Run a regional analysis and select Save Report to keep it here.");
+          reportsContainer.appendChild(empty);
           return;
         }
 
-        statusMessage.textContent = `${reports.length} saved report(s)`;
+        statusMessage.textContent = `${reports.length} saved report${reports.length === 1 ? "" : "s"}`;
 
         reports.forEach(report => {
           const card = document.createElement("article");
           card.className = "report";
 
-          const title = document.createElement("h2");
-          title.textContent = report.title || "Saved Report";
+          const top = document.createElement("div");
+          top.className = "report-top";
 
-          const location = document.createElement("p");
-          location.textContent = `Location: ${report.location}`;
+          const title = addText(top, "h2", "", report.title || "Saved Report");
+          title.style.flex = "1";
 
-          const expiry = document.createElement("p");
-          expiry.className = "muted";
-          expiry.textContent = `Expires: ${new Date(report.expires_at).toLocaleString()}`;
+          const expiry = addText(
+            top,
+            "span",
+            "muted",
+            `Expires: ${formatDate(report.expires_at)}`
+          );
+          expiry.style.fontSize = "12px";
 
-          const details = document.createElement("pre");
-          details.hidden = true;
-          details.textContent = JSON.stringify(report.report_data, null, 2);
+          card.appendChild(top);
+
+          addText(card, "p", "location", `Location: ${report.location || "Not available"}`);
+
+          const created = addText(
+            card,
+            "p",
+            "expiry",
+            `Saved: ${formatDate(report.created_at)}`
+          );
+          created.title = "Report creation time";
+
+          const actions = document.createElement("div");
+          actions.className = "report-actions";
 
           const viewButton = document.createElement("button");
+          viewButton.type = "button";
           viewButton.className = "view";
-          viewButton.textContent = "View Report";
+          viewButton.innerHTML = '<i class="fa-solid fa-eye"></i> Show Report';
+
+          const reportData = report.report_data && typeof report.report_data === "object"
+            ? report.report_data
+            : {};
+
+          const details = makeSummary(reportData, report.location || "Not available");
+
           viewButton.addEventListener("click", () => {
             details.hidden = !details.hidden;
-            viewButton.textContent = details.hidden ? "View Report" : "Hide Report";
+            viewButton.innerHTML = details.hidden
+              ? '<i class="fa-solid fa-eye"></i> Show Report'
+              : '<i class="fa-solid fa-eye-slash"></i> Hide Report';
+
+            viewButton.setAttribute("aria-expanded", String(!details.hidden));
           });
 
           const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
           deleteButton.className = "delete";
-          deleteButton.textContent = "Delete";
+          deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i> Delete';
+
           deleteButton.addEventListener("click", async () => {
-            if (!confirm("Delete this saved report?")) return;
+            if (!confirm("Permanently delete this saved report?")) return;
 
             deleteButton.disabled = true;
+
             try {
               const result = await fetch(
-                `${API_BASE}/saved-reports/${report.id}`,
+                `${API_BASE}/saved-reports/${encodeURIComponent(report.id)}`,
                 {
                   method: "DELETE",
-                  headers: { Authorization: `Bearer ${token}` }
+                  headers: { "Authorization": `Bearer ${token}` }
                 }
               );
 
-              if (!result.ok) throw new Error("Could not delete report.");
+              if (result.status === 401) {
+                window.location.replace("login.html");
+                return;
+              }
+
+              if (!result.ok) throw new Error("Could not delete this report.");
+
               card.remove();
 
               const remaining = reportsContainer.querySelectorAll(".report").length;
               statusMessage.textContent = remaining
-                ? `${remaining} saved report(s)`
+                ? `${remaining} saved report${remaining === 1 ? "" : "s"}`
                 : "You have no saved reports yet.";
+
+              if (!remaining) {
+                const empty = document.createElement("div");
+                empty.className = "empty";
+                addText(empty, "div", "", "📂");
+                addText(empty, "h2", "", "No saved reports yet");
+                addText(empty, "p", "", "Run a regional analysis and save it to see it here.");
+                reportsContainer.appendChild(empty);
+              }
             } catch (error) {
-              alert(error.message);
+              alert(error.message || "Unable to delete this report.");
               deleteButton.disabled = false;
             }
           });
 
-          card.append(title, location, expiry, viewButton, deleteButton, details);
+          actions.append(viewButton, deleteButton);
+          card.append(actions, details);
           reportsContainer.appendChild(card);
         });
       } catch (error) {
+        console.error("Saved reports error:", error);
         statusMessage.textContent = error.message || "Unable to load reports.";
       }
     }
